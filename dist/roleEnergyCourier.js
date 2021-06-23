@@ -1,68 +1,69 @@
+var path = require('funcMoveCreep');
+var findEnergy = require('funcGetCourierWithdraw');
+var putEnergy = require('funcGetCourierDeposit');
 var roleCourier = {
 
     /** @param {Creep} creep **/
-    run: function(creep,rcl) {
+    run: function (creep,rv,sv) {
 
-
-
-        //take energy from containers with memory.source
-        //place energy in extensions before spawn
-        //if spawn full, place energy in containers with memory.stockpile
-        
         var nearbyEnemies = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 10)
         var nearbyTowers = creep.room.find(FIND_STRUCTURES, (structures) => structures.structureType == 'tower')
-        if(nearbyEnemies.length > 0) {
-            if(nearbyTowers.length){
-                console.log("Creep: "+creep.name+" fleeing to "+nearbyTowers[0].id)
-                creep.moveTo(nearbyTowers[0], {visualizePathStyle: {stroke: '#ffffff'}})
+        if (nearbyEnemies.length > 0) {
+            if (nearbyTowers.length) {
+                //console.log(creep.name + " fleeing to " + nearbyTowers[0].id)
+                path(creep,nearbyTowers)
             } else {
-                console.log("Creep: "+creep.name+" fleeing to Spawn1")
-                creep.moveTo(Game.spawns['Spawn1'], {visualizePathStyle: {stroke: '#ffffff'}})
+                //console.log(creep.name + " fleeing to Spawn1")
+                path(creep,Game.spawns['Spawn1'])
             }
-            
         }
-      
 
-        if(creep.memory.delivering && creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
+        if (creep.memory.delivering && creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
             creep.memory.delivering = false;
-	    }
-	    if(!creep.memory.delivering && creep.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
-	        creep.memory.delivering = true;
-	    }
-
-	    if(creep.memory.delivering) {
-	        var targets = creep.room.find(FIND_STRUCTURES, {
-                    filter: (structure) => {
-                        return (structure.structureType == STRUCTURE_EXTENSION ||
-                                structure.structureType == STRUCTURE_SPAWN ||
-                                structure.structureType == STRUCTURE_TOWER) && 
-                                structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
-                    }
-            });
-            if(creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(targets[0], {visualizePathStyle: {stroke: '#ffffff'}});
-            }
-        
-        } else {
-            var targets = _.filter(creep.room.find(FIND_STRUCTURES), (structure) => structure.structureType == 'container' && structure.store.getUsedCapacity(RESOURCE_ENERGY) > 50);
-            var dropped = creep.room.find(FIND_DROPPED_RESOURCES)
-            if(dropped.length > 0){
-                if(creep.pickup(dropped[0]) == ERR_NOT_IN_RANGE) {
-                    creep.moveTo(dropped[0], {visualizePathStyle: {stroke: '#ffaa00'}})
-                }
-            } else if(targets.length > 0){
-                if(creep.withdraw(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(targets[0], {visualizePathStyle: {stroke: '#ffaa00'}});
-                 }
-            } else {
-                
-                creep.say('IDLE')
-            }
-            
         }
-        
+        if (!creep.memory.delivering && creep.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
+            creep.memory.delivering = true;
+        }
+
+        //DROPPING OFF
+        if (creep.memory.delivering) {
+            var target = putEnergy(creep,sv)
+            if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                if(creep.memory.myPos == creep.pos){
+                    creep.memory.stallCount += 1
+                } else {
+                    creep.memory.stallCount = 0
+                }
+                creep.memory.myPos = creep.pos
+                //console.log(creep.name+" pathing to target: "+target+", stalled for "+creep.memory.stallCount+" ticks.")
+                path(creep,target)
+            } else if(creep.transfer(target, RESOURCE_ENERGY) == OK ){
+                //console.log(creep.name+" has delivered energy.")
+                creep.memory.movingTo = null
+            } else {
+                //console.log(creep.name+" idle in deliver mode.")
+            }
+
+        //PICKING UP
+        } else {
+            var target = findEnergy(creep,sv)
+            //console.log(creep.name+" found pickup target: "+target)
+            if(target && creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
+                //console.log(creep.name+" pathing to target: "+target+", stalled for "+creep.memory.stallCount+" ticks.")
+                path(creep,target);
+            } else if(target && creep.pickup(target) == ERR_NOT_IN_RANGE){
+                //console.log(creep.name+" pathing to target: "+target)
+                path(creep,target);
+                //console.log(creep.name+" pathing to dropped energy: "+target+", stalled for "+creep.memory.stallCount+" ticks.")
+                path(creep,target);
+            } else if( creep.pickup(target) == OK ){
+                //console.log(creep.name+" has picked up dropped energy.")
+            } else {
+                //console.log(creep.name+" idle in pick up mode.")
+            }
+        }
     }
-        
+
 };
 
 module.exports = roleCourier;
