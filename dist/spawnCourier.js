@@ -1,7 +1,7 @@
 var spawnCourier = {
     run: function (rv, cv, sv) {
 
-        var spawn1 = Game.spawns['Spawn1']
+        var spawn1 = sv.spawns[0]
         var cParts = [MOVE, CARRY]
         var cost = BODYPART_COST.move + BODYPART_COST.carry
         var workParts = Math.floor((rv.currentRoom.energyAvailable - 51) / (BODYPART_COST.carry+BODYPART_COST.carry+BODYPART_COST.move))

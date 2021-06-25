@@ -9,7 +9,7 @@ var spawnRoomUpgrader = {
             cost += BODYPART_COST.work
         }
         if (cv.upgraders.length < cv.uMax && !spawn1.spawning && cv.harvesters.length == cv.hMax) {
-            console.log('Spawning new upgrader: ' + "U+" + rv.ts + " (Cost: " + cost + ")");
+            console.log('Spawning new upgrader: ' + "U+" + rv.ts + " (SpawnEnergy: "+spawn1.store.getUsedCapacity(RESOURCE_ENERGY)+" Cost: " + cost + ")");
             spawn1.spawnCreep(uParts, "U+" + rv.ts,
                 {
                     memory: {

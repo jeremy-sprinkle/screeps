@@ -32,28 +32,6 @@ var roleRampartRepair = {
             } else {
                 creep.say('IDLE')
             }
-
-
-            /*  var hostileStructures = creep.room.find(FIND_HOSTILE_STRUCTURES);
-              var sources = creep.room.find(FIND_SOURCES);
-              for(var i in sources){
-                  if(hostileStructures.length > 0 && sources[i].pos.getRangeTo(hostileStructures[0].pos) < 10) {
-                              //console.log("Ignoring Source: "+sources[i].id+" Due To Hostile Presence");
-                              continue;
-                          }
-                  var fields = creep.room.lookForAtArea(LOOK_TERRAIN, sources[i].pos.y-1, sources[i].pos.x-1, sources[i].pos.y+1, sources[i].pos.x+1, true);
-                  var occupied = creep.room.lookForAtArea(LOOK_CREEPS, sources[i].pos.y-1, sources[i].pos.x-1, sources[i].pos.y+1, sources[i].pos.x+1, true);
-                  var accessibleFields = 9-_.countBy( fields , "terrain" ).wall;
-                  var spots = accessibleFields - occupied.length
-                  //console.log("Source: "+sources[i].id+" has: " + (accessibleFields-occupied.length) +" of "+accessibleFields+" available.")
-                  if(spots == 0 && sources[i].pos.getRangeTo(creep.pos)>1){
-                      console.log("No available spots at Source: "+sources[i].id)
-                      continue;
-                  } else if(creep.harvest(sources[i]) == ERR_NOT_IN_RANGE && spawn1.store.getUsedCapacity(RESOURCE_ENERGY) < 200) {
-                      creep.moveTo(sources[0], {visualizePathStyle: {stroke: '#ffaa00'}});
-                  }
-
-              }*/
         }
     }
 };

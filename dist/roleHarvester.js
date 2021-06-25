@@ -3,13 +3,17 @@ var roleHarvester = {
 
     /** @param {Creep} creep **/
     run: function (creep) {
+        var cpuStart = Game.cpu.getUsed()
         var source = Game.getObjectById(creep.memory.target);
-        var couriers = _.filter(Game.creeps, (creep) => creep.memory.role == "courier").length
+        var couriers = _.filter(Game.creeps, (c) => c.memory.role == "courier" && c.memory.workroom == creep.memory.workroom).length
         var container = source.pos.findInRange(FIND_STRUCTURES, 1,
             {filter: (structure) => structure.structureType == 'container'});
-
+        console.log(creep.room +" harvester running")
         //HARVESTING
+
         if (creep.store.getFreeCapacity() > 0) {
+            var cpuHarvestStart = Game.cpu.getUsed()
+            console.log(creep.room +" harvester should try to harvest")
             if (couriers == 0 && container.length &&container[0].store.getUsedCapacity(RESOURCE_ENERGY) > 50){
                 if(creep.withdraw(container[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
                     creep.say("Courier")
@@ -27,8 +31,11 @@ var roleHarvester = {
                 creep.pos.createConstructionSite(STRUCTURE_CONTAINER);
                 creep.memory.storeCreated = true;
             }
+            var cpuHarvestEnd = Game.cpu.getUsed()
         } else {
+            var cpuDeliverStart = Game.cpu.getUsed()
             //REPAIR CONTAINER OR TRANSFER TO STORAGE
+            console.log(creep.room +" harvester should try to dump")
             creep.memory.harvesting = false;
             var targets
             if (couriers > 0) {
@@ -63,7 +70,12 @@ var roleHarvester = {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) == creep.store.getCapacity(RESOURCE_ENERGY)) {
                 creep.memory.harvesting = true;
             }
+            var cpuDeliverEnd = Game.cpu.getUsed()
         }
+        var cpuEnd = Game.cpu.getUsed()
+        //console.log("roleHarvester used "+Math.floor(cpuEnd-cpuStart)+" CPU")
+        //console.log("Harvest: "+Math.floor(cpuHarvestEnd-cpuHarvestStart))
+        //console.log("Deliver: "+Math.floor(cpuDeliverEnd-cpuDeliverStart))
     }
 };
 

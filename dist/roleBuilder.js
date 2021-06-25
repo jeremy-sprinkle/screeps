@@ -16,10 +16,8 @@ var roleBuilder = {
             var targets = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
             if (targets) {
                 if (creep.build(targets) == ERR_NOT_IN_RANGE) {
-                    console.log(creep.name+" pathing to target: "+targets+", stalled for "+creep.memory.stallCount+" ticks.")
+                    //console.log(creep.name+" pathing to target: "+targets+", stalled for "+creep.memory.stallCount+" ticks.")
                     path(creep,targets);
-                } else if(creep.build(targets) == OK) {
-                    console.log(creep.name+" constructing target: "+targets)
                 }
             } else {
                 creep.memory.idle += 1
@@ -43,18 +41,18 @@ var roleBuilder = {
 
             if (dropped.length > 0) {
                 if (creep.pickup(dropped[0])== ERR_NOT_IN_RANGE){
-                    console.log(creep.name+" pathing to dropped resources, stalled for "+creep.memory.stallCount+" ticks.")
+                    //console.log(creep.name+" pathing to dropped resources, stalled for "+creep.memory.stallCount+" ticks.")
                     path(creep,dropped)
                 }
             } else if (energyDif == 0 && creepsTakingFromSpawn.length == 0) {
                 creep.memory.takingFromSpawn = true;
                 if (creep.withdraw(spawn1, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    console.log(creep.name+" pathing to spawn, stalled for "+creep.memory.stallCount+" ticks.")
+                    //console.log(creep.name+" pathing to spawn, stalled for "+creep.memory.stallCount+" ticks.")
                     path(creep,spawn1)
                 }
             } else if (targets.length > 0) {
                 if (creep.withdraw(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                    console.log(creep.name+" taking from most full container, stalled for "+creep.memory.stallCount+" ticks.")
+                    //console.log(creep.name+" taking from most full container, stalled for "+creep.memory.stallCount+" ticks.")
                     path(creep,targets)
                 }
             } else {
@@ -88,6 +86,7 @@ var roleBuilder = {
 
         }
     }
+
 };
 
 module.exports = roleBuilder;

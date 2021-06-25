@@ -5,6 +5,7 @@ var roleCourier = {
 
     /** @param {Creep} creep **/
     run: function (creep,rv,sv) {
+        var cpuStart = Game.cpu.getUsed()
 
         var nearbyEnemies = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 10)
         var nearbyTowers = creep.room.find(FIND_STRUCTURES, (structures) => structures.structureType == 'tower')
@@ -29,12 +30,6 @@ var roleCourier = {
         if (creep.memory.delivering) {
             var target = putEnergy(creep,sv)
             if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                if(creep.memory.myPos == creep.pos){
-                    creep.memory.stallCount += 1
-                } else {
-                    creep.memory.stallCount = 0
-                }
-                creep.memory.myPos = creep.pos
                 //console.log(creep.name+" pathing to target: "+target+", stalled for "+creep.memory.stallCount+" ticks.")
                 path(creep,target)
             } else if(creep.transfer(target, RESOURCE_ENERGY) == OK ){
@@ -46,6 +41,7 @@ var roleCourier = {
 
         //PICKING UP
         } else {
+            console.log(creep.room+" has sv inside role: "+sv)
             var target = findEnergy(creep,sv)
             //console.log(creep.name+" found pickup target: "+target)
             if(target && creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
@@ -62,6 +58,8 @@ var roleCourier = {
                 //console.log(creep.name+" idle in pick up mode.")
             }
         }
+        var cpuEnd = Game.cpu.getUsed()
+        //console.log("roleEnergyCourier used : "+Math.floor(cpuEnd-cpuStart)+" CPU")
     }
 
 };

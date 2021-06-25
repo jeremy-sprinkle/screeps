@@ -1,6 +1,6 @@
 var spawnHarvester = {
-    run: function (source, hMax) {
-
+    run: function (source, hMax, sv) {
+        console.log("sv in spawn harv: "+ sv)
         var roomHarvesters = _.filter(Game.creeps, (creep) => creep.memory.role == "harvester"
             && creep.memory.workroom == source.room.name);
         if (roomHarvesters.length >= hMax) {
@@ -21,8 +21,8 @@ var spawnHarvester = {
 
         } else if (activeHarvesters.length == 0) {
 
-            var harvesterParts = [MOVE, CARRY]
-            var cost = BODYPART_COST.move + BODYPART_COST.carry
+            var harvesterParts = [MOVE, CARRY, WORK]
+            var cost = BODYPART_COST.move + BODYPART_COST.carry + BODYPART_COST.work
             var hName = 'H'
             var affordableParts
             if(roomHarvesters.length == 0){
@@ -30,7 +30,10 @@ var spawnHarvester = {
             } else {
                 affordableParts = Math.floor((source.room.energyCapacityAvailable - 101) / BODYPART_COST.work)
                 if(affordableParts>=5){
-                    affordableParts=5
+                    affordableParts=4
+                }
+                if(affordableParts == 0){
+                    affordableParts = 1
                 }
             }
 
@@ -38,10 +41,10 @@ var spawnHarvester = {
                 harvesterParts.push(WORK)
                 cost += BODYPART_COST.work
             }
-            var spawn1 = Game.spawns['Spawn1']
+            var spawn1 = sv.spawns[0]
             var ts = Game.time.toString().slice(5)
             if (roomHarvesters.length < hMax && !spawn1.spawning
-                && source.room.energyAvailable > cost) {
+                && source.room.energyAvailable >= cost) {
                 console.log('Spawning new harvester: ' + hName + ts);
                 spawn1.spawnCreep(harvesterParts, hName + ts,
                     {
