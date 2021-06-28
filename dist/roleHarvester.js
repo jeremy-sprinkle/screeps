@@ -1,42 +1,50 @@
 var path = require('funcMoveCreep');
-var roleHarvester = {
+var log = require('funcLogging');
 
-    /** @param {Creep} creep **/
-    run: function (creep) {
+
+var roleHarvester = {
+    run: function (creep, sv, cv, rv) {
+        var c = global.logging.roles
+        var cpu = global.logging.cpu
         var cpuStart = Game.cpu.getUsed()
+
+        //RESET TO HARVESTING AFTER DROPPING
+        if (!creep.memory.harvesting && creep.store.getUsedCapacity(RESOURCE_ENERGY) == 0) {
+            log(c, creep.name + " is resetting to harvesting after delivering.")
+            creep.memory.harvesting = true;
+        }
+        if (creep.memory.harvesting && creep.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
+            log(c, creep.name + " is resetting to delivering after harvesting.")
+            creep.memory.harvesting = false;
+        }
+
         var source = Game.getObjectById(creep.memory.target);
         var couriers = _.filter(Game.creeps, (c) => c.memory.role == "courier" && c.memory.workroom == creep.memory.workroom).length
         var container = source.pos.findInRange(FIND_STRUCTURES, 1,
             {filter: (structure) => structure.structureType == 'container'});
-        console.log(creep.room +" harvester running")
         //HARVESTING
 
-        if (creep.store.getFreeCapacity() > 0) {
-            var cpuHarvestStart = Game.cpu.getUsed()
-            console.log(creep.room +" harvester should try to harvest")
-            if (couriers == 0 && container.length &&container[0].store.getUsedCapacity(RESOURCE_ENERGY) > 50){
-                if(creep.withdraw(container[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE){
-                    creep.say("Courier")
-                    path(creep,container)
-                }
-            } else if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-                creep.say("Harvest")
-                path(creep,source)
+        log(c, creep.name + " confirming harvesting mode: "+creep.memory.harvesting)
+
+        if (creep.memory.harvesting) {
+            log(c, creep.name + " is in harvesting mode.")
+
+            if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+                log(c, creep.name + " is moving to harvest: " + source)
+                path(creep, source)
             }
-            if(container.length && couriers > 0){
-                creep.drop(RESOURCE_ENERGY,creep.store.getUsedCapacity(RESOURCE_ENERGY))
+            if (container.length && couriers > 0) {
+                log(c, creep.name + " is dropping energy onto a container..")
+                creep.drop(RESOURCE_ENERGY, creep.store.getUsedCapacity(RESOURCE_ENERGY))
             }
             if (creep.pos.getRangeTo(source.pos) < 2 && !creep.memory.storeCreated) {
-                creep.say('Placing')
+                log(c, creep.name + " is creating a container at it's source.")
                 creep.pos.createConstructionSite(STRUCTURE_CONTAINER);
                 creep.memory.storeCreated = true;
             }
-            var cpuHarvestEnd = Game.cpu.getUsed()
         } else {
-            var cpuDeliverStart = Game.cpu.getUsed()
-            //REPAIR CONTAINER OR TRANSFER TO STORAGE
-            console.log(creep.room +" harvester should try to dump")
-            creep.memory.harvesting = false;
+
+            log(c, creep.name + " is out of harvesting mode.")
             var targets
             if (couriers > 0) {
                 targets = creep.pos.findClosestByRange(FIND_STRUCTURES, {
@@ -48,7 +56,9 @@ var roleHarvester = {
                             structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
                     }
                 });
+                log(c, creep.name + " is looking to dump energy at: " + targets)
             } else {
+                log(c, creep.name + " is looking to drop energy at spawn.")
                 targets = creep.pos.findClosestByRange(FIND_STRUCTURES, {
                     filter: (structure) => {
                         return (structure.structureType == STRUCTURE_EXTENSION ||
@@ -57,25 +67,33 @@ var roleHarvester = {
                     }
                 });
             }
-            if (container.length > 0 && container[0].hits < container[0].hitsMax) {
-                creep.say("Repair")
-                creep.repair(container[0]);
+            var noSpawn = _.filter(creep.room.find(FIND_CONSTRUCTION_SITES), (site) => site.structureType == "spawn")
+            if(noSpawn.length > 0){
+                if(cree.build(noSpawn[0]) == ERR_NOT_IN_RANGE){
+                    path(creep,noSpawn )
+                }
+            } else if (rv.roomEnergyPct >= 85 && couriers == 0) {
+                if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
+                    log(c, creep.name + " is looking to upgrade the room controller.")
+                    path(creep, creep.room.controller)
+                }
+            } else if (container.length > 0 && container[0].hits < container[0].hitsMax) {
+                log(c, creep.name + " is repairing a source container.")
+                if (creep.repair(container[0]) == ERR_NOT_IN_RANGE) {
+                    path(creep, container[0])
+                }
             } else if (targets) {
+                log(c, creep.name + " delivering to: " + targets)
                 if (creep.transfer(targets, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE && targets.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-                    path(creep,targets)
+                    path(creep, targets)
                 }
             }
 
-            //RESET TO HARVESTING AFTER DROPPING
-            if (creep.store.getFreeCapacity(RESOURCE_ENERGY) == creep.store.getCapacity(RESOURCE_ENERGY)) {
-                creep.memory.harvesting = true;
-            }
-            var cpuDeliverEnd = Game.cpu.getUsed()
+
         }
         var cpuEnd = Game.cpu.getUsed()
-        //console.log("roleHarvester used "+Math.floor(cpuEnd-cpuStart)+" CPU")
-        //console.log("Harvest: "+Math.floor(cpuHarvestEnd-cpuHarvestStart))
-        //console.log("Deliver: "+Math.floor(cpuDeliverEnd-cpuDeliverStart))
+
+        log(cpu, creep.name + " is using " + (cpuEnd - cpuStart).toString().substring(0, 5) + " CPU.")
     }
 };
 

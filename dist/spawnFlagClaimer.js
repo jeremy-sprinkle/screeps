@@ -8,7 +8,7 @@ var flagClaimer = {
         var spawn1 = Game.spawns['Spawn1']
         var ts = Game.time.toString().slice(5)
         if (!spawn1.spawning) {
-            console.log('Adding new flag claimer to spawn queue: '+ "(Spawn Energy: " + rv.roomEnergy + ", Required Energy: " + cost + ")");
+            console.log('Adding new flag claimer to spawn queue: ' + "(Spawn Energy: " + rv.roomEnergy + ", Required Energy: " + cost + ")");
             spawn1.spawnCreep(fcParts, fcName + ts,
                 {
                     memory: {

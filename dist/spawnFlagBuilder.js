@@ -7,8 +7,8 @@ var flagBuilder = {
         var AddParts = [MOVE, CARRY, WORK]
         var AddCost = BODYPART_COST.move + BODYPART_COST.carry + BODYPART_COST.work
         var workParts = Math.floor((rv.currentRoom.energyCapacityAvailable - 51) / AddCost)
-        if(workParts>4){
-            workParts=4
+        if (workParts > 4) {
+            workParts = 4
         }
         for (var parts = 0; parts < workParts; parts++) {
             fbParts = fbParts.concat(AddParts)
@@ -18,7 +18,7 @@ var flagBuilder = {
         var spawn1 = Game.spawns['Spawn1']
         var ts = Game.time.toString().slice(5)
         if (!spawn1.spawning) {
-            console.log('Adding new flag builder to spawn queue: '+ "(Spawn Energy: " + rv.roomEnergy + ", Required Energy: " + cost + ")");
+            console.log('Adding new flag builder to spawn queue: ' + "(Spawn Energy: " + rv.roomEnergy + ", Required Energy: " + cost + ")");
             spawn1.spawnCreep(fbParts, fbName + ts,
                 {
                     memory: {

@@ -1,16 +1,16 @@
 var spawnFlagAttacker = {
-    run: function (flagPos,rv){
+    run: function (flagPos, rv) {
         var faParts = [MOVE, WORK]
         var cost = BODYPART_COST.move + BODYPART_COST.work
         var faName = 'FA'
-        var faAddParts = [MOVE,WORK]
-        var faCost = BODYPART_COST.move + BODYPART_COST.work
+        var faAddParts = [MOVE, WORK]
+        var addCost = BODYPART_COST.move + BODYPART_COST.work
         //scale when working
-        var affordableParts = Math.floor((rv.currentRoom.energyCapacityAvailable - 101) / cost)
+        var affordableParts = Math.floor((rv.currentRoom.energyCapacityAvailable -cost) / addCost)
 
         for (var parts = 0; parts < affordableParts; parts++) {
             faParts = faParts.concat(faAddParts)
-            cost += faCost
+            cost += addCost
         }
         var spawn1 = Game.spawns['Spawn1']
         var ts = Game.time.toString().slice(5)
